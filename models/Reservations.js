@@ -14,12 +14,18 @@ const ReservationSchema = new Schema({
      },
      pickupDate: {
           type: Date,
-          default: Date.now,
+          default: () => new Date(Date.now() + 24 * 60 * 60 * 1000), // Default to tomorrow
           required: true
      },
      expected_deliveryDate: {
           type: Date,
-          required: true
+          required: true,
+          validate: {
+               validator: function (value) {
+                    return value > this.pickupDate; 
+               },
+               message: 'Expected delivery date must be after pickup date'
+          }
      },
      actual_deliveryDate: {
           type: Date,
@@ -29,8 +35,12 @@ const ReservationSchema = new Schema({
           type: String,
           enum: ['reserved', 'expired', 'borrowed'],
           default: 'reserved'
+     },
+     copy: {
+          type: Number, required: true
      }
 });
+
 
 const ReservationsModel = mongoose.model("Reservations", ReservationSchema);
 module.exports = ReservationsModel;

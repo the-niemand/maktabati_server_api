@@ -35,7 +35,7 @@ router.get('/fetchReservation/:id', async (req, res) => {
 // Create reservation
 router.post('/createReservation', async (req, res) => {
      try {
-          const { userId, bookId, expectedDeliveryDate } = req.body;
+          const { userId, bookId, copy  , pickupDate , expectedDeliveryDate} = req.body;
 
           // Check if the user and book exist
           const user = await UsersModel.findById(userId);
@@ -52,7 +52,8 @@ router.post('/createReservation', async (req, res) => {
           const reservation = new ReservationsModel({
                user: userId,
                book: bookId,
-               pickupDate: new Date(), // Default to current date
+               copy: copy,
+               pickupDate: pickupDate || new Date(),
                expected_deliveryDate: expectedDeliveryDate,
                status: 'reserved'
           });
@@ -101,5 +102,47 @@ router.put('/updateReservationById/:id', async (req, res) => {
           res.status(500).json({ error: err.message });
      }
 });
+
+
+router.get('/unavailability/:id/:copy', async (req, res) => {
+     const { id, copy } = req.params;
+ 
+     try {
+         // Validate and find the book by ID
+         const book = await BooksModel.findById(id);
+         if (!book) {
+             return res.status(404).json({ message: 'Book not found' });
+         }
+ 
+         // Parse 'copy' parameter to ensure it's a number
+         const copyNumber = Number(copy);
+         if (isNaN(copyNumber)) {
+             return res.status(400).json({ message: 'Invalid copy number' });
+         }
+ 
+         // Find reservations for the specified book copy that are currently active
+         const reservations = await ReservationsModel.find({
+             book: id,
+             status: { $in: ['reserved', 'borrowed'] },
+             copy: copyNumber,
+             expected_deliveryDate: { $gte: new Date() },
+         }).sort({ pickupDate: 1 });
+ 
+         // Prepare an array of reservation periods
+         const periods = reservations.map(reservation => ({
+             from: reservation.pickupDate.toISOString().split('T')[0],
+             to: reservation.expected_deliveryDate.toISOString().split('T')[0]
+         }));
+ 
+         // Return the list of reservation periods
+         res.json(periods);
+ 
+     } catch (error) {
+         // Handle errors
+         return res.status(500).json({ message: error.message });
+     }
+ });
+ 
+
 
 module.exports = router;
