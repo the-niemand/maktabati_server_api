@@ -40,7 +40,7 @@ router.post("/register", async (req, res) => {
         const email = data.email
         const user = await UsersModel.findOne({ email });
         if (user) {
-            if (user.Firstname == data.Firstname && user.Lastname == data.Lastname && user.email == data.email) {
+            if (user.firstname == data.firstname && user.lastname == data.lastname && user.email == data.email) {
                 res.status(409).json({ message: "User already exist" })
             } else if (user.email == data.email) {
                 res.status(409).json({ message: "email already exist" })
