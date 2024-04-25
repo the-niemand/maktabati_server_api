@@ -40,7 +40,7 @@ router.post("/register", async (req, res) => {
         const email = data.email
         const user = await UsersModel.findOne({ email });
         if (user) {
-            if (user.Fullname == data.Fullname && user.email == data.email) {
+            if (user.Firstname == data.Firstname && user.Lastname == data.Lastname && user.email == data.email) {
                 res.status(409).json({ message: "User already exist" })
             } else if (user.email == data.email) {
                 res.status(409).json({ message: "email already exist" })
@@ -111,11 +111,8 @@ router.put('/updateUserById/:id', async (req, res) => {
         const id = req.params.id;
         const newData = req.body;
 
-        // Check if there's a new password in the request body
         if (newData.password) {
-            // Hash the new password
             const hashedPassword = await bcrypt.hash(newData.password, 10);
-            // Update the newData object to replace the plain text password with the hashed one
             newData.password = hashedPassword;
         }
 
