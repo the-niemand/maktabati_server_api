@@ -31,17 +31,6 @@ router.get('/fetchUser/:id', async (req, res) => {
     }
 });
 
-router.post('/createUser', async (req, res) => {
-    try {
-        const data = req.body;
-        const user = new UsersModel(data);
-        const savedUser = await user.save();
-        res.status(201).json({ data: savedUser });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-});
-
 
 // #############################################
 
@@ -89,7 +78,7 @@ router.post("/login", async (req, res) => {
         }
 
         const token = jwt.sign({ id: user._id }, "secret")
-        res.json({token , user_id : user._id});
+        res.json({ token, user_id: user._id });
     } catch (err) {
 
     }
@@ -116,10 +105,19 @@ router.delete('/deleteUserById/:id', async (req, res) => {
     }
 });
 
+
 router.put('/updateUserById/:id', async (req, res) => {
     try {
         const id = req.params.id;
         const newData = req.body;
+
+        // Check if there's a new password in the request body
+        if (newData.password) {
+            // Hash the new password
+            const hashedPassword = await bcrypt.hash(newData.password, 10);
+            // Update the newData object to replace the plain text password with the hashed one
+            newData.password = hashedPassword;
+        }
 
         const updatedUser = await UsersModel.findByIdAndUpdate(
             id,
@@ -136,5 +134,6 @@ router.put('/updateUserById/:id', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
 
 module.exports = router;

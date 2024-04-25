@@ -29,6 +29,21 @@ router.get('/fetchBook/:id', async (req, res) => {
     }
 });
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 router.post('/createBook', async (req, res) => {
     try {
         const data = req.body;
@@ -39,6 +54,22 @@ router.post('/createBook', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 router.delete('/deleteBookById/:id', async (req, res) => {
     try {
