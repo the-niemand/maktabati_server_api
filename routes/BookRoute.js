@@ -1,10 +1,25 @@
 const express = require('express');
 const router = express.Router();
 const BooksModel = require('../models/Books');
-
-// Connect to database (if not already handled in BooksModel)
+const multer = require("multer")
 
 router.use(express.json());
+
+//multer
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, "../images")
+    },
+    filename: (req, file, cb) => {
+        cb(null, file.originalname)
+    },
+});
+
+
+const upload = multer({ storage })
+
+
+
 
 router.get('/fetchBooks', async (req, res) => {
     try {
@@ -14,6 +29,9 @@ router.get('/fetchBooks', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
+
+
 
 router.get('/fetchBook/:id', async (req, res) => {
     try {
@@ -31,31 +49,22 @@ router.get('/fetchBook/:id', async (req, res) => {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-router.post('/createBook', async (req, res) => {
+router.post('/createBook', upload.single('image'), async (req, res) => {
     try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No image uploaded' });
+        }
         const data = req.body;
         const book = new BooksModel(data);
         const savedBook = await book.save();
         res.status(201).json({ data: savedBook });
     } catch (err) {
+        if (err instanceof multer.MulterError) {
+            return res.status(500).json({ error: 'Image upload failed' });
+        }
         res.status(500).json({ error: err.message });
     }
 });
-
-
 
 
 
