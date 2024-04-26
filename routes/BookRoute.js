@@ -11,7 +11,7 @@ const storage = multer.diskStorage({
         cb(null, "../images")
     },
     filename: (req, file, cb) => {
-        cb(null, file.originalname)
+        cb(null, Date.now() + "--" + file.originalname)
     },
 });
 
@@ -57,6 +57,7 @@ router.post('/createBook', upload.single('image'), async (req, res) => {
         const data = req.body;
         const book = new BooksModel(data);
         const savedBook = await book.save();
+
         res.status(201).json({ data: savedBook });
     } catch (err) {
         if (err instanceof multer.MulterError) {
