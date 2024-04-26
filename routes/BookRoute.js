@@ -6,9 +6,10 @@ const multer = require("multer")
 router.use(express.json());
 
 //multer
+
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, "../images")
+        cb(null, "./images")
     },
     filename: (req, file, cb) => {
         cb(null, Date.now() + "--" + file.originalname)
@@ -49,12 +50,15 @@ router.get('/fetchBook/:id', async (req, res) => {
 
 
 
-router.post('/createBook', upload.single('image'), async (req, res) => {
+
+router.post('/createBook', upload.single('file'), async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ error: 'No image uploaded' });
         }
-        const data = req.body;
+
+        const data = JSON.parse(req.body.data);
+
         const book = new BooksModel(data);
         const savedBook = await book.save();
 
@@ -65,7 +69,9 @@ router.post('/createBook', upload.single('image'), async (req, res) => {
         }
         res.status(500).json({ error: err.message });
     }
+
 });
+
 
 
 
