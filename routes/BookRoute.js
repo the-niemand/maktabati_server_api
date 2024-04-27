@@ -2,20 +2,21 @@ const express = require('express');
 const router = express.Router();
 const BooksModel = require('../models/Books');
 const multer = require("multer")
-
+const path = require('path');
 router.use(express.json());
 
 //multer
 
+
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, "./images")
+        const uploadDir = path.join(__dirname, '../images'); 
+        cb(null, uploadDir);
     },
     filename: (req, file, cb) => {
-        cb(null, file.originalname)
+        cb(null, file.originalname);
     },
 });
-
 
 const upload = multer({ storage })
 
@@ -62,7 +63,7 @@ router.post('/createBook', upload.single('file'), async (req, res) => {
         const book = new BooksModel(data);
         const savedBook = await book.save();
         res.status(201).json({ data: savedBook });
-        
+
     } catch (err) {
         if (err instanceof multer.MulterError) {
             return res.status(500).json({ error: 'Image upload failed' });
