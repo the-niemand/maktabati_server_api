@@ -3,6 +3,7 @@ const router = express.Router();
 const BooksModel = require('../models/Books');
 const multer = require("multer")
 const path = require('path');
+const fs = require('fs');
 router.use(express.json());
 
 //multer
@@ -84,26 +85,26 @@ router.post('/createBook', upload.single('file'), async (req, res) => {
 
 
 
-
-
-
-
 router.delete('/deleteBookById/:id', async (req, res) => {
     try {
         const id = req.params.id;
-        const book = await BooksModel.findById(id);
+        const book = await BooksModel.findByIdAndDelete(id);
 
         if (!book) {
             return res.status(404).json({ error: 'Book not found' });
         }
 
-
         if (book.image) {
             const imagePath = path.join(__dirname, '../images', book.image);
-            fs.unlinkSync(imagePath);
+            console.log(imagePath);
+            
+            if (fs.existsSync(imagePath)) {
+                fs.unlinkSync(imagePath);
+            } else {
+                console.log('Image does not exist:', imagePath);
+            }
         }
 
-        await book.remove();
         res.json({ message: 'Book deleted successfully' });
     } catch (err) {
         res.status(500).json({ error: err.message });
