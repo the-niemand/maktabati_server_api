@@ -10,7 +10,7 @@ router.use(express.json());
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        const uploadDir = path.join(__dirname, '../images'); 
+        const uploadDir = path.join(__dirname, '../images');
         cb(null, uploadDir);
     },
     filename: (req, file, cb) => {
@@ -91,17 +91,25 @@ router.post('/createBook', upload.single('file'), async (req, res) => {
 router.delete('/deleteBookById/:id', async (req, res) => {
     try {
         const id = req.params.id;
-        const deletedBook = await BooksModel.findByIdAndDelete(id);
+        const book = await BooksModel.findById(id);
 
-        if (!deletedBook) {
+        if (!book) {
             return res.status(404).json({ error: 'Book not found' });
         }
 
-        res.json({ data: deletedBook });
+
+        if (book.image) {
+            const imagePath = path.join(__dirname, '../images', book.image);
+            fs.unlinkSync(imagePath);
+        }
+
+        await book.remove();
+        res.json({ message: 'Book deleted successfully' });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
+
 
 router.put('/updateBooksById/:id', async (req, res) => {
     try {
