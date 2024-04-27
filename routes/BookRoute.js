@@ -61,8 +61,8 @@ router.post('/createBook', upload.single('file'), async (req, res) => {
 
         const book = new BooksModel(data);
         const savedBook = await book.save();
-
         res.status(201).json({ data: savedBook });
+        
     } catch (err) {
         if (err instanceof multer.MulterError) {
             return res.status(500).json({ error: 'Image upload failed' });
