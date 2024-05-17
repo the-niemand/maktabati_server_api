@@ -85,8 +85,8 @@ router.post("/login", async (req, res) => {
             sameSite: 'Strict',
             maxAge: 604800000
         });
-        
-        res.status(200).json({ user_id, message: "login successfully" })
+
+        res.status(200).json({id: user._id, message: "login successfully" })
 
     } catch (err) {
 
@@ -95,6 +95,10 @@ router.post("/login", async (req, res) => {
 // #############################################
 
 
+router.post('/logout', (req, res) => {
+    res.clearCookie('token');
+    res.sendStatus(200);
+});
 
 
 
