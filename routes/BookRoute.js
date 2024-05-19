@@ -4,16 +4,15 @@ const BooksModel = require('../models/Books');
 const multer = require("multer")
 const path = require('path');
 const fs = require('fs');
+const cloudinary = require('../utils/cloudinary');
+const { Console } = require('console');
 router.use(express.json());
+
 
 //multer
 
 
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        const uploadDir = path.join(__dirname, '../images');
-        cb(null, uploadDir);
-    },
     filename: (req, file, cb) => {
         cb(null, file.originalname);
     },
@@ -58,20 +57,54 @@ router.post('/createBook', upload.single('file'), async (req, res) => {
         if (!req.file) {
             return res.status(400).json({ error: 'No image uploaded' });
         }
-        
+
+        const result = await cloudinary.uploader.upload(req.file.path);
+        const image = result.url;
+
         const data = JSON.parse(req.body.data);
+        data.image = image;
+
         const book = new BooksModel(data);
         const savedBook = await book.save();
-        res.status(201).json({ data: savedBook });
 
+        res.status(201).json({ data: savedBook });
     } catch (err) {
         if (err instanceof multer.MulterError) {
             return res.status(500).json({ error: 'Image upload failed' });
         }
-        res.status(500).json({ error: err.message });
+        return res.status(500).json({ error: err.message });
     }
-
 });
+
+
+
+// router.post('/createBook', upload.single('file'), async (req, res) => {
+//     cloudinary.uploader.upload(req.file.path, async (err, res) => {
+//         if (err) {
+//             return res.status(500).json({ error: err.message });
+//         }
+//         // try {
+//         //     if (!req.file) {
+//         //         return res.status(400).json({ error: 'No image uploaded' });
+//         //     }
+
+//         //     const data = JSON.parse(req.body.data);
+//         //     const book = new BooksModel(data);
+//         //     const savedBook = await book.save();
+//         //     res.status(201).json({ data: savedBook });
+
+//         // } catch (err) {
+//         //     if (err instanceof multer.MulterError) {
+//         //         return res.status(500).json({ error: 'Image upload failed' });
+//         //     }
+//         //     res.status(500).json({ error: err.message });
+//         // }
+//         return res.status(200).json({ data: res });
+//     })
+
+
+
+// });
 
 
 
@@ -96,7 +129,7 @@ router.delete('/deleteBookById/:id', async (req, res) => {
         if (book.image) {
             const imagePath = path.join(__dirname, '../images', book.image);
             console.log(imagePath);
-            
+
             if (fs.existsSync(imagePath)) {
                 fs.unlinkSync(imagePath);
             } else {
