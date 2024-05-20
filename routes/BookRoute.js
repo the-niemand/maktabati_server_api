@@ -34,7 +34,7 @@ router.get('/fetchBooks', async (req, res) => {
 
 router.post('/fetchFilteredBooks', async (req, res) => {
     try {
-        const data = JSON.parse(req.body);
+        const data = req.body
         const query = {};
         const sort = {};
 
@@ -50,9 +50,9 @@ router.post('/fetchFilteredBooks', async (req, res) => {
 
 
         if (data.sortBy === "release") {
-            sort.createdDate = 1; // Ascending order by createdDate
+            sort.createdDate = 1;
         } else if (data.sortBy === "copies") {
-            sort.copies = 1; // Ascending order by copies
+            sort.copies = 1;
         }
 
         // Execute the query with optional sorting
