@@ -32,6 +32,38 @@ router.get('/fetchBooks', async (req, res) => {
     }
 });
 
+router.post('/fetchFilteredBooks', async (req, res) => {
+    try {
+        const data = JSON.parse(req.body);
+        const query = {};
+        const sort = {};
+
+        if (data.searchValue) {
+            query.title = data.searchValue;
+        }
+        if (data.category) {
+            query.categories = { $elemMatch: { $eq: data.category } };
+        }
+        if (data.type) {
+            query.type = data.type;
+        }
+
+
+        if (data.sortBy === "release") {
+            sort.createdDate = 1; // Ascending order by createdDate
+        } else if (data.sortBy === "copies") {
+            sort.copies = 1; // Ascending order by copies
+        }
+
+        // Execute the query with optional sorting
+        const books = await BooksModel.find(query).sort(sort);
+        res.json({ data: books });
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 
 
 

@@ -6,7 +6,8 @@ const BooksSchema = new mongoose.Schema({
      type: { type: String, required: true },
      categories: { type: [String], required: true, default: ['unknown'] },
      copies: { type: Number, required: true, min: 1 },
-     image: { type: String }
+     image: { type: String },
+     createdDate: { type: Date, default: Date.now }
 });
 
 
