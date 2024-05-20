@@ -34,15 +34,12 @@ router.get('/fetchBooks', async (req, res) => {
 
 router.post('/fetchFilteredBooks', async (req, res) => {
     try {
-        const data = req.body;
+        const data = req.body
         const query = {};
         const sort = {};
 
         if (data.searchValue) {
-            query.$or = [
-                { $text: { $search: data.searchValue } },
-                { title: { $regex: new RegExp(data.searchValue, 'i') } }
-            ];
+            query.title =  { "$regex": data.searchValue, "$options": "i" }  ;
         }
         if (data.category) {
             query.categories = { $elemMatch: { $eq: data.category } };
@@ -50,6 +47,7 @@ router.post('/fetchFilteredBooks', async (req, res) => {
         if (data.type) {
             query.type = data.type;
         }
+
 
         if (data.sortBy === "release") {
             sort.createdDate = 1;
