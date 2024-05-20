@@ -10,7 +10,7 @@ const BooksSchema = new mongoose.Schema({
      createdDate: { type: Date, default: Date.now }
 });
 
-
+BooksSchema.index({ title: 'text' });
 const BooksModel = mongoose.model("Books", BooksSchema)
 module.exports = BooksModel;
 
