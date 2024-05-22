@@ -23,8 +23,6 @@ router.get('/fetchSavedBooks', async (req, res) => {
 router.post('/createSaved', async (req, res) => {
      try {
           const { userId, bookId } = req.body;
-
-          // Check if the user and book exist
           const user = await UsersModel.findById(userId);
           const book = await BooksModel.findById(bookId);
 
@@ -49,16 +47,16 @@ router.post('/createSaved', async (req, res) => {
 });
 
 // Delete reservation by ID
-router.delete('/deleteReservationById/:id', async (req, res) => {
+router.delete('/deleteSavedById', async (req, res) => {
      try {
-          const id = req.params.id;
-          const deletedsavedBook = await SavedModel.findByIdAndDelete(id);
+          const { user, book } = req.body;
+          const deletedSavedBook = await SavedModel.findOneAndDelete({ user, book });
 
-          if (!deletedsavedBook) {
+          if (!deletedSavedBook) {
                return res.status(404).json({ error: 'Saved not found' });
           }
 
-          res.json({ data: deletedsavedBook });
+          res.json({ data: deletedSavedBook });
      } catch (err) {
           res.status(500).json({ error: err.message });
      }
