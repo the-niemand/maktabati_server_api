@@ -18,11 +18,13 @@ require('./Scheduled Tasks/scheduledTasks');
 const UserRoute = require('./routes/UserRoute');
 const BookRoute = require('./routes/BookRoute');
 const ReservationRoute = require('./routes/ReservationRoute');
+const SavedRoute = require('./routes/SavedRoute');
 
 
 app.use('/users', UserRoute);
 app.use('/books', BookRoute);
 app.use('/reservations', ReservationRoute);
+app.use('/save', SavedRoute);
 
 
 const PORT = process.env.PORT;
