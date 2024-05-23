@@ -48,13 +48,16 @@ router.post('/fetchFilteredBooks', async (req, res) => {
         if (data.type) {
             query.type = data.type;
         }
-
-
-        if (data.sortBy === "release") {
-            sort.createdDate = 1;
-        } else if (data.sortBy === "copies") {
-            sort.copies = 1;
+        if (data.status){
+            query.status = data.status;
         }
+
+
+            if (data.sortBy === "release") {
+                sort.createdDate = 1;
+            } else if (data.sortBy === "copies") {
+                sort.copies = 1;
+            }
 
         const books = await BooksModel.find(query).sort(sort);
         res.json({ data: books });
@@ -76,7 +79,7 @@ router.post('/fetchSavedBooks', async (req, res) => {
 
         const savedBooks = user.savedBooks;
         const books = await BooksModel.find({ _id: { $in: savedBooks } });
-        
+
         res.json({ books });
     } catch (error) {
         res.status(500).json({ error: error.message });
