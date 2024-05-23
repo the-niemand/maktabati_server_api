@@ -7,6 +7,7 @@ const UsersSchema = new mongoose.Schema({
     password: { type: String, required: true },
     phone: { type: Number, required: true },
     role: { type: String, default: 'member' },
+    savedBooks : {type : Array}
 })
 
 const UsersModel = mongoose.model("Users", UsersSchema)

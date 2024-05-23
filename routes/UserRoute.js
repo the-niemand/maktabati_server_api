@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const UsersModel = require('../models/Users');
+const BooksModel = require('../models/Books');
 const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
 
@@ -15,6 +16,71 @@ router.get('/fetchUsers', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
+
+
+router.get('/checkIsSaved/:userId/:bookId', async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        const bookId = req.params.bookId;
+
+        const user = await UsersModel.find({ _id: userId });
+        const result = user[0].savedBooks.includes(bookId)
+        res.json({ data: result });
+
+    } catch (error) {
+        res.status(500).json({ error });
+    }
+})
+
+
+router.get('/Saved/:userId/:bookId', async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        const bookId = req.params.bookId;
+
+        const result = await UsersModel.findByIdAndUpdate(
+            userId,
+            { $push: { savedBooks: bookId } },
+            { new: true, useFindAndModify: false } // Returns the updated document
+        );
+
+        if (!result) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        res.json({ data: result });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+})
+
+
+
+router.get('/RemoveSaved/:userId/:bookId', async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        const bookId = req.params.bookId;
+
+        // Find the user by ID and pull the bookId from the savedBooks array
+        const result = await UsersModel.findByIdAndUpdate(
+            userId,
+            { $pull: { savedBooks: bookId } },
+            { new: true, useFindAndModify: false } // Returns the updated document
+        );
+
+        if (!result) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        res.json({ data: result });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+
+
 
 router.get('/fetchUser/:id', async (req, res) => {
     try {
@@ -86,7 +152,7 @@ router.post("/login", async (req, res) => {
             maxAge: 604800000
         });
 
-        res.status(200).json({id: user._id, message: "login successfully" })
+        res.status(200).json({ id: user._id, message: "login successfully" })
 
     } catch (err) {
 
