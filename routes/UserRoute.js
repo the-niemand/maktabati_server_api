@@ -42,7 +42,7 @@ router.get('/Saved/:userId/:bookId', async (req, res) => {
         const result = await UsersModel.findByIdAndUpdate(
             userId,
             { $push: { savedBooks: bookId } },
-            { new: true, useFindAndModify: false } // Returns the updated document
+            { new: true, useFindAndModify: false }
         );
 
         if (!result) {

@@ -1,11 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const BooksModel = require('../models/Books');
+const UsersModel = require('../models/Users');
+const cloudinary = require('../utils/cloudinary');
+const { Console } = require('console');
 const multer = require("multer")
 const path = require('path');
 const fs = require('fs');
-const cloudinary = require('../utils/cloudinary');
-const { Console } = require('console');
 router.use(express.json());
 
 
@@ -39,7 +40,7 @@ router.post('/fetchFilteredBooks', async (req, res) => {
         const sort = {};
 
         if (data.searchValue) {
-            query.title =  { "$regex": data.searchValue, "$options": "i" }  ;
+            query.title = { "$regex": data.searchValue, "$options": "i" };
         }
         if (data.category) {
             query.categories = { $elemMatch: { $eq: data.category } };
@@ -60,6 +61,25 @@ router.post('/fetchFilteredBooks', async (req, res) => {
 
     } catch (err) {
         res.status(500).json({ error: err.message });
+    }
+});
+
+
+router.post('/fetchSavedBooks', async (req, res) => {
+    try {
+        const { userId } = req.body;
+        const user = await UsersModel.findOne({ _id: userId });
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        const savedBooks = user.savedBooks;
+        const books = await BooksModel.find({ _id: { $in: savedBooks } });
+        
+        res.json({ books });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 });
 
