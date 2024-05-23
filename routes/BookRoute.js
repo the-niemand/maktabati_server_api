@@ -54,7 +54,7 @@ router.post('/fetchFilteredBooks', async (req, res) => {
 
 
             if (data.sortBy === "release") {
-                sort.createdDate = 1;
+                sort.createdDate = -1;
             } else if (data.sortBy === "copies") {
                 sort.copies = 1;
             }
