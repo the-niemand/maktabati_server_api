@@ -33,7 +33,7 @@ const ReservationSchema = new Schema({
      },
      status: {
           type: String,
-          enum: ['reserved', 'expired', 'borrowed' , 'returned'],
+          enum: ['reserved', 'expired', 'borrowed' , 'returned' , 'unreturned'],
           default: 'reserved'
      }
 });

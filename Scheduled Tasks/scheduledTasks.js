@@ -10,9 +10,18 @@ cron.schedule('0 0 * * *', async () => {
                status: 'reserved'
           });
 
+          const notReturnedBorrows = await ReservationsModel.find({
+               expected_deliveryDate: { $lt: new Date() },
+               status: 'reserved'
+          });
 
           for (const reservation of expiredReservations) {
                reservation.status = 'expired';
+               await reservation.save();
+          }
+
+          for (const reservation of notReturnedBorrows) {
+               reservation.status = 'unreturned';
                await reservation.save();
           }
 
