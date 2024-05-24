@@ -50,12 +50,13 @@ router.get('/fetchReservation/:id', async (req, res) => {
 // Create reservation
 router.post('/createReservation', async (req, res) => {
      try {
-          const { userId, bookId, expectedDeliveryDate, status } = req.body;
+          const { userId, bookId, expectedDeliveryDate, pickupDate, status } = req.body;
 
           const reservation = new ReservationsModel({
                user: userId,
                book: bookId,
                expected_deliveryDate: expectedDeliveryDate,
+               pickupDate: pickupDate,
                status: status
           });
 
