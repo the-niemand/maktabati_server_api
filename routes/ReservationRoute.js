@@ -9,12 +9,27 @@ router.use(express.json());
 // Fetch all reservations
 router.get('/fetchReservations', async (req, res) => {
      try {
-          const reservations = await ReservationsModel.find({});
-          res.json({ data: reservations });
+          const reservations = await ReservationsModel.find({}).exec();
+
+          const dataPromises = reservations.map(async (reserv) => {
+               const user = await UsersModel.findOne({ _id: reserv.user });
+               const book = await BooksModel.findOne({ _id: reserv.book });
+               return {
+                    user,
+                    reservation: reserv,
+                    book
+               };
+          });
+
+          const data = await Promise.all(dataPromises);
+
+          res.status(200).json(data);
      } catch (err) {
           res.status(500).json({ error: err.message });
      }
 });
+
+
 
 // Fetch reservation by ID
 router.get('/fetchReservation/:id', async (req, res) => {
@@ -35,31 +50,25 @@ router.get('/fetchReservation/:id', async (req, res) => {
 // Create reservation
 router.post('/createReservation', async (req, res) => {
      try {
-          const { userId, bookId, copy  , pickupDate , expectedDeliveryDate} = req.body;
-
-          // Check if the user and book exist
-          const user = await UsersModel.findById(userId);
-          const book = await BooksModel.findById(bookId);
-
-          if (!user) {
-               return res.status(404).json({ error: 'User not found' });
-          }
-
-          if (!book) {
-               return res.status(404).json({ error: 'Book not found' });
-          }
+          const { userId, bookId, expectedDeliveryDate, status } = req.body;
 
           const reservation = new ReservationsModel({
                user: userId,
                book: bookId,
-               copy: copy,
-               pickupDate: pickupDate || new Date(),
                expected_deliveryDate: expectedDeliveryDate,
-               status: 'reserved'
+               status: status
           });
 
           const savedReservation = await reservation.save();
+
+          // Check if the status is "borrowed"
+          if (status === 'borrowed') {
+               // Update the number of copies in the book collection
+               await BooksModel.findByIdAndUpdate(bookId, { $inc: { copies: -1 } });
+          }
+
           res.status(201).json({ data: savedReservation });
+
      } catch (error) {
           res.status(500).json({ error: error.message });
      }
@@ -106,43 +115,43 @@ router.put('/updateReservationById/:id', async (req, res) => {
 
 router.get('/unavailability/:id/:copy', async (req, res) => {
      const { id, copy } = req.params;
- 
+
      try {
-         // Validate and find the book by ID
-         const book = await BooksModel.findById(id);
-         if (!book) {
-             return res.status(404).json({ message: 'Book not found' });
-         }
- 
-         // Parse 'copy' parameter to ensure it's a number
-         const copyNumber = Number(copy);
-         if (isNaN(copyNumber)) {
-             return res.status(400).json({ message: 'Invalid copy number' });
-         }
- 
-         // Find reservations for the specified book copy that are currently active
-         const reservations = await ReservationsModel.find({
-             book: id,
-             status: { $in: ['reserved', 'borrowed'] },
-             copy: copyNumber,
-             expected_deliveryDate: { $gte: new Date() },
-         }).sort({ pickupDate: 1 });
- 
-         // Prepare an array of reservation periods
-         const periods = reservations.map(reservation => ({
-             from: reservation.pickupDate.toISOString().split('T')[0],
-             to: reservation.expected_deliveryDate.toISOString().split('T')[0]
-         }));
- 
-         // Return the list of reservation periods
-         res.json(periods);
- 
+          // Validate and find the book by ID
+          const book = await BooksModel.findById(id);
+          if (!book) {
+               return res.status(404).json({ message: 'Book not found' });
+          }
+
+          // Parse 'copy' parameter to ensure it's a number
+          const copyNumber = Number(copy);
+          if (isNaN(copyNumber)) {
+               return res.status(400).json({ message: 'Invalid copy number' });
+          }
+
+          // Find reservations for the specified book copy that are currently active
+          const reservations = await ReservationsModel.find({
+               book: id,
+               status: { $in: ['reserved', 'borrowed'] },
+               copy: copyNumber,
+               expected_deliveryDate: { $gte: new Date() },
+          }).sort({ pickupDate: 1 });
+
+          // Prepare an array of reservation periods
+          const periods = reservations.map(reservation => ({
+               from: reservation.pickupDate.toISOString().split('T')[0],
+               to: reservation.expected_deliveryDate.toISOString().split('T')[0]
+          }));
+
+          // Return the list of reservation periods
+          res.json(periods);
+
      } catch (error) {
-         // Handle errors
-         return res.status(500).json({ message: error.message });
+          // Handle errors
+          return res.status(500).json({ message: error.message });
      }
- });
- 
+});
+
 
 
 module.exports = router;

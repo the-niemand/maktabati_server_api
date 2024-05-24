@@ -14,7 +14,7 @@ const ReservationSchema = new Schema({
      },
      pickupDate: {
           type: Date,
-          default: () => new Date(Date.now() + 24 * 60 * 60 * 1000), // Default to tomorrow
+          default: () => new Date(Date.now()),
           required: true
      },
      expected_deliveryDate: {
@@ -35,9 +35,6 @@ const ReservationSchema = new Schema({
           type: String,
           enum: ['reserved', 'expired', 'borrowed'],
           default: 'reserved'
-     },
-     copy: {
-          type: Number, required: true
      }
 });
 
