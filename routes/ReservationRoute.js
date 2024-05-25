@@ -61,10 +61,7 @@ router.post('/createReservation', async (req, res) => {
           });
 
           const savedReservation = await reservation.save();
-
-          // Check if the status is "borrowed"
-          if (status === 'borrowed') {
-               // Update the number of copies in the book collection
+          if (status === 'borrowed' || 'reserved') {
                await BooksModel.findByIdAndUpdate(bookId, { $inc: { copies: -1 } });
           }
 

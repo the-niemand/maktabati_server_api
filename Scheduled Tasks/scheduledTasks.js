@@ -12,7 +12,7 @@ cron.schedule('0 0 * * *', async () => {
 
           const notReturnedBorrows = await ReservationsModel.find({
                expected_deliveryDate: { $lt: new Date() },
-               status: 'reserved'
+               status: 'borrowed'
           });
 
           for (const reservation of expiredReservations) {
